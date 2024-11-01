@@ -1,5 +1,5 @@
 "use client"
-import { BackButton, Container, IssuesList, Loading, Owner, PageAction } from "@/app/styles";
+import { BackButton, Container, FilterList, IssuesList, Loading, Owner, PageAction } from "@/app/styles";
 import api from "@/services/api";
 import Link from "next/link";
 import { useParams } from "next/navigation";
@@ -38,6 +38,12 @@ export default function Page() {
     const [issues, setIssues] = useState<IssuesType[]>([]);
     const [loading, setLoading] = useState(true);
     const [page, setPage] = useState<number>(1);
+    const [filters, setFilters] = useState([
+        { state: 'all', label: 'Todas', active: true },
+        { state: 'open', label: 'Abertas', active: false },
+        { state: 'closed', label: 'Fechadas', active: false },
+    ]);
+    const [filterIndex, setFilterIndex] = useState(0);
 
     const params = useParams<{ repositorio: string }>()
 
@@ -51,7 +57,7 @@ export default function Page() {
                     api.get(`/repos/${decodeURIComponent(params.repositorio)}`),
                     api.get(`/repos/${decodeURIComponent(params.repositorio)}/issues`, {
                         params: {
-                            state: 'open',
+                            state: filters.find(f => f.active)?.state,
                             per_page: 5
                         }
                     }),
@@ -74,7 +80,7 @@ export default function Page() {
         async function loadIssue() {
             const response = await api.get(`repos/${nomeRepo}/issues`, {
                 params: {
-                    state: 'open',
+                    state: filters[filterIndex].state,
                     page,
                     per_page: 5
                 }
@@ -85,10 +91,15 @@ export default function Page() {
 
         loadIssue();
 
-    }, [page])
+    }, [filterIndex, filters, page])
 
     function handlePage(action: string) {
         setPage(action === 'back' ? (page - 1 === 0 ? 1 : page - 1) : page + 1)
+    }
+
+    function handleFilter(index: number) {
+        setFilterIndex(index)
+        setPage(1)
     }
 
 
@@ -106,15 +117,31 @@ export default function Page() {
                         </Link>
                     </BackButton>
                     {repositorio && (
-                        <Owner>
-                            <img
-                                src={repositorio?.owner?.avatar_url}
-                                alt={repositorio?.owner?.login}
-                            />
-                            <h1>{repositorio?.name}</h1>
-                            <p>{repositorio?.description}</p>
-                        </Owner>
+                        <>
+                            <Owner>
+                                <img
+                                    src={repositorio?.owner?.avatar_url}
+                                    alt={repositorio?.owner?.login}
+                                />
+                                <h1>{repositorio?.name}</h1>
+                                <p>{repositorio?.description}</p>
+                            </Owner>
+
+                            <FilterList active={filterIndex}>
+                                {filters.map((filter, index) => (
+                                    <button
+                                        type="button"
+                                        key={filter.label}
+                                        onClick={() => handleFilter(index)}
+                                    >
+                                        {filter.label}
+                                    </button>
+                                ))}
+                            </FilterList>
+                        </>
                     )}
+
+
 
                     <IssuesList>
                         {issues.map(issue => (
