@@ -57,7 +57,6 @@ export default function Home() {
         }
 
         const response = await api.get(`repos/${newRepo}`)
-        console.log(`repos/${newRepo}`)
 
         const hasRepo = repositorios.find(repo => repo.name === newRepo)
 

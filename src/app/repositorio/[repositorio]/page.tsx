@@ -78,15 +78,20 @@ export default function Page() {
     useEffect(() => {
 
         async function loadIssue() {
-            const response = await api.get(`repos/${nomeRepo}/issues`, {
-                params: {
-                    state: filters[filterIndex].state,
-                    page,
-                    per_page: 5
-                }
-            });
+            try {
+                const response = await api.get(`repos/${nomeRepo}/issues`, {
+                    params: {
+                        state: filters[filterIndex].state,
+                        page,
+                        per_page: 5
+                    }
+                });
+                console.log(response)
 
-            setIssues(response.data);
+                setIssues(response.data);
+            } catch (error) {
+                console.log(error)
+            }
         }
 
         loadIssue();
