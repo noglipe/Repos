@@ -4,6 +4,7 @@ import { Container, DeleteButton, Form, List, Rotate, SubmitButton } from "./sty
 import { useCallback, useEffect, useState } from "react";
 import api from "@/services/api";
 import { FaSpinner, FaTrash } from "react-icons/fa6";
+import Link from "next/link";
 
 type Data = {
   name: string
@@ -20,14 +21,17 @@ export default function Home() {
   useEffect(() => {
     const repoStorge = localStorage.getItem('repos');
     if (repoStorge) {
-      setRepositorios(JSON.parse(repoStorge));
+      try {
+        setRepositorios(JSON.parse(repoStorge));
+      } catch (error) {
+        console.error("Error parsing repos:", error);
+        setRepositorios([]);
+      }
+    } else {
+      setRepositorios([]);
     }
-  }, [])
 
-  //Salvar
-  useEffect(() => {
-    localStorage.setItem('repos', JSON.stringify(repositorios))
-  }, [repositorios])
+  }, [])
 
 
   function handleInputChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -38,6 +42,11 @@ export default function Home() {
   const handleSubmit = useCallback((e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
+    if (newRepo.trim() === '') {
+      setAlert(true);
+      return;
+    }
+
     async function submit() {
       setLoading(true)
       setAlert(false)
@@ -46,6 +55,7 @@ export default function Home() {
         if (newRepo === '') {
           throw new Error('Você precisa indicar um repositório!')
         }
+
         const response = await api.get(`repos/${newRepo}`)
 
         const hasRepo = repositorios.find(repo => repo.name === newRepo)
@@ -53,13 +63,13 @@ export default function Home() {
         if (hasRepo) {
           throw new Error("Repositorio Duplicado");
         }
-        const data: Data = {
+        const data = {
           name: response.data.full_name,
         }
 
         setRepositorios([...repositorios, data])
         setNewRepo('')
-        console.log(data.name)
+        localStorage.setItem('repos', JSON.stringify([...repositorios, data]));
       } catch (error) {
         setAlert(true)
         console.log(error)
@@ -74,8 +84,11 @@ export default function Home() {
   }, [newRepo, repositorios]);
 
   const handleDelete = useCallback((repo: string) => {
-    const find = repositorios.filter(r => r.name !== repo)
-    setRepositorios(find);
+    if (repositorios) {
+      const find = repositorios.filter(r => r.name !== repo)
+      setRepositorios(find);
+      localStorage.setItem('repos', JSON.stringify(find));
+    }
   }, [repositorios]);
 
   return (
@@ -85,7 +98,7 @@ export default function Home() {
         Meus Repositórios
       </h1>
 
-      <Form onSubmit={handleSubmit} error={alert}>
+      <Form onSubmit={handleSubmit} $error={alert} >
         <input
           type="text"
           placeholder="Adicionar Repositório"
@@ -114,7 +127,7 @@ export default function Home() {
                 <FaTrash size={20} />
               </DeleteButton>
               <span>{repo.name}</span>
-              <a href="#"><FaBars size={20} /></a>
+              <Link href={`/repositorio/${encodeURIComponent(repo.name)}`}><FaBars size={20} /></Link>
             </li>
           ))
         }

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import styled, { keyframes } from "styled-components";
 
 
@@ -18,7 +19,8 @@ export const Container = styled.div`
 `
 
 interface FormProps {
-    error?: boolean;
+    $error?: boolean;
+    alert?: boolean;
 }
 
 export const Form = styled.form<FormProps>`
@@ -28,8 +30,8 @@ export const Form = styled.form<FormProps>`
 
   input{
     flex: 1;
-    border: 1px solid ${props => (props.error ? '#ff0000' : '#ddd')};
-    color: ${props => (props.error ? '#ff0000' : '#ddd')};
+    border: 1px solid ${(props) => (props.$error ? '#ff0000' : '#ddd')};
+    color: ${(props) => (props.$error ? '#ff0000' : '#ddd')};
     padding: 10px 15px;
     border-radius: 4px;
     font-size: 17px;
@@ -99,3 +101,43 @@ padding: 8px 7px;
 outline: 0;
 border-radius: 4px;
 `
+export const Loading = styled.div`
+    color: #fff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+`;
+
+export const Owner = styled.div`
+display: flex;
+flex-direction: column;
+align-items: center;
+
+    img{
+        width: 150px;
+        border-radius: 20%;
+        margin: 20px 0;
+    }
+
+    h1{
+        font-size: 30px;
+        color: #0d2636;
+    }
+
+    p{
+        margin-top: 5px;
+        font-size: 14px;
+        color: #000;
+        text-align: center;
+        line-height: 1.4;
+        max-width: 400px;
+
+    }
+`;
+export const BackButton = styled.div`
+    border:0;
+    outline:0;
+    background: transparent;
+    
+`;
